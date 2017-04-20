@@ -10,14 +10,12 @@
 
 The canonical way to invoke a tactic in Lean is to use the =by=
 keyword within a Lean expression. Suppose we write the following:
-#+BEGIN_SRC lean_text
-open tactic
-
-variables A B : Prop
-
-example : A → B → A ∧ B :=
-by _
-#+END_SRC 
+: open tactic
+: 
+: variables A B : Prop
+: 
+: example : A → B → A ∧ B :=
+: by _
 Lean expects something of type =tactic unit= to fill the underscore,
 where =tactic= refers to the tactic monad. When the elaborator
 processes this definition, it elaborates everything outside the =by=
@@ -32,11 +30,9 @@ The tactic monad can be thought of as a combination of a state monad
 =meta constant= primitives) and the option monad. Because it is a
 monad, we have the usual =do= notation. So, if =r=, =s=, and =t= are
 tactics, you should think of
-#+BEGIN_SRC lean_text
-do a ← r, 
-   b ← s,
-   t
-#+END_SRC
+: do a ← r, 
+:    b ← s,
+:    t
 as meaning "apply tactic =r= to the state, and store the return result
 in =a=; apply tactic =s= to the state, and store the return result in
 =b=; then, finally, apply tactic =t= to the state." Moreover, any
@@ -61,10 +57,8 @@ there. Don't worry if some of the expressions seem mysterious; they
 will be explained in the sections that follow.
 
 One thing the tactic can do is print a message to the outside world:
-#+BEGIN_SRC lean_text
-example : A → B → A ∧ B :=
-by do trace "Hi, Mom!"
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do trace "Hi, Mom!"
 When the file is executed, Lean issues an error message to the effect
 that the tactic has failed to fill the relevant placeholder, which is
 what it is supposed to do. But the =trace= message is printed during
@@ -73,19 +67,15 @@ can actually trace value of any type that Lean can coerce to a string
 output, and we will see that this includes a number of useful types.
 
 Another thing we can do is trace the current tactic state:
-#+BEGIN_SRC lean_text
-example : A → B → A ∧ B :=
-by do trace "Hi, Mom!",
-      trace_state
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do trace "Hi, Mom!",
+:       trace_state
 Now the output includes the list of /goals/ that are active in the
 tactic state, each with a local context that includes the local
 variables and hypotheses. In this case there is only one:
-#+BEGIN_SRC lean_text
-Hi, Mom!
-A B : Prop
-⊢ A → B → A ∧ B
-#+END_SRC
+: Hi, Mom!
+: A B : Prop
+: ⊢ A → B → A ∧ B
 This points to an important fact: the internal, and somewhat
 mysterious, tactic state includes at least a list of goals. In fact,
 it includes much more: every tactic is invoked in a rich
@@ -96,12 +86,10 @@ most directly relevant to the task at hand.
 
 Let us dispense with the trace messages now, and start to prove the
 theorem by introducting the first two hypotheses.
-#+BEGIN_SRC lean_text
-example : A → B → A ∧ B :=
-by do eH1 ← intro `H1,
-      eH2 ← intro `H2,
-      skip
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do eH1 ← intro `H1,
+:       eH2 ← intro `H2,
+:       skip
 The backticks indicate that =H1= and =H2= are /names/; we will discuss
 these below. The tactic =skip= is a do-nothing tactic, simply included
 to ensure that the resulting expression has type =tactic unit=.
@@ -113,33 +101,27 @@ reflect the internal representation of Lean expressions, so, roughly,
 via meta-programming glue, the =expr= type allows us to manipulate
 Lean expressions in Lean itself. In particular, we can ask the tactic
 to print the current goal:
-#+BEGIN_SRC lean_text
-example : A → B → A ∧ B :=
-by do eH1 ← intro `H1,
-      eH2 ← intro `H2,
-      target >>= trace
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do eH1 ← intro `H1,
+:       eH2 ← intro `H2,
+:       target >>= trace
 In this case, the output is =A ∧ B=, as we would expect. We can also
 ask the tactic to print the elements of the local context.
-#+BEGIN_SRC lean_text 
-example : A → B → A ∧ B :=
-by do eH1 ← intro `H1,
-      eH2 ← intro `H2,
-      local_context >>= trace
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do eH1 ← intro `H1,
+:       eH2 ← intro `H2,
+:       local_context >>= trace
 This yields the list =[A, B, H1, H2]=. We already happen to have
 representations of =H1= and =H2=, because they were returned by the
 =intro= tactic. But we can extract the other expressions in the local
 context given their names:
-#+BEGIN_SRC lean_text 
-example : A → B → A ∧ B :=
-by do intro `H1,
-      intro `H2,
-      eA ← get_local `A,
-      eB ← get_local `B,
-      trace (to_string eA ++ ", " ++ to_string eB),
-      skip
-#+END_SRC
+: example : A → B → A ∧ B :=
+: by do intro `H1,
+:       intro `H2,
+:       eA ← get_local `A,
+:       eB ← get_local `B,
+:       trace (to_string eA ++ ", " ++ to_string eB),
+:       skip
 Notice that =eA= and =eB= are different from =A= and =B=; they have
 type =expr= rather than =Prop=. They are the internal representations
 of the latter expressions. At present, there is not much for us to do
@@ -161,6 +143,9 @@ by do intro `H1,
       repeat assumption
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 We can also do it in a more hands-on way:
 #+BEGIN_SRC lean
 open tactic
@@ -176,6 +161,9 @@ by do eH1 ← intro `H1,
       exact eH2
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 The double-backticks will also be explained below, but the general
 idea is that the third line of the tactic builds an =expr= that
 reflects the =and.intro= declaration in the Lean environment, and
@@ -193,6 +181,9 @@ by do eH1 ← intro `H1,
       exact e
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 Here, the construct =`(...)= is used to build a /pre-expression/, the
 tactic =to_expr= elaborates it and converts it to an expression, and
 the =exact= tactic applies it. In the next section, we will see even
@@ -218,6 +209,9 @@ example : A → B → A ∧ B :=
 by my_tactic
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 Of course, =my_tactic= is not a very exciting tactic; we designed it
 to prove one particular theorem, and it will only work on examples
 that have the very same shape. But we can write more intelligent
@@ -231,14 +225,12 @@ goal at hand.
 ** Names and Expressions
 
 Suppose we write an ordinary tactic proof in Lean:
-#+BEGIN_SRC lean_text
-example (A B : Prop) (H : A ∧ B) : B ∧ A :=
-begin
-  split,
-  exact and.right H,
-  exact and.left H
-end
-#+END_SRC
+: example (A B : Prop) (H : A ∧ B) : B ∧ A :=
+: begin
+:   split,
+:   exact and.right H,
+:   exact and.left H
+: end
 This way of writing the tactic proof suggests that the =H= in the
 tactic block refers to the expression =H : A ∧ B= in the list of
 hypotheses. But this is an illusion; what =H= /really/ refers to
@@ -246,16 +238,14 @@ is the first hypothesis /named/ =H= that is in the local context of
 the goal in the state when the tactic is executed. This is made clear,
 for example, by the fact that earlier lines in the proof can change
 the name of the hypothesis:
-#+BEGIN_SRC lean_text
-example (A B : Prop) (H : A ∧ B) : B ∧ A :=
-begin
-  revert H,
-  intro H',
-  split,
-  exact and.right H',
-  exact and.left H'
-end
-#+END_SRC
+: example (A B : Prop) (H : A ∧ B) : B ∧ A :=
+: begin
+:   revert H,
+:   intro H',
+:   split,
+:   exact and.right H',
+:   exact and.left H'
+: end
 Now writing =exact and.right H= would make no sense. We could,
 alternatively, contrive to make =H= denote something different from
 the original hypothesis. This often happens with the =cases= and
@@ -268,7 +258,7 @@ like =H : A ∧ B= in the hypothesis of the example, and the Lean
 objects that we use to act on the tactic state, such as the name "H"
 or an object of type =expr=. Without using the =begin...end= front
 end, we can construct the proof as follows:
-#+BEGIN_SRC lean_text
+#+BEGIN_EXAMPLE
 open tactic
 
 -- BEGIN
@@ -277,7 +267,7 @@ by do split,
    to_expr `(and.right H) >>= exact,
    to_expr `(and.left H) >>= exact
 -- END
-#+END_SRC
+#+END_EXAMPLE
 This tells Lean to elaborate the expressions =and.right H= and
 =and.left H= in the context of the current goal, and then apply
 them. The =begin...end= construct is essentially a front end that
@@ -322,6 +312,9 @@ mk_const `bar >>= exact
 
 end foo
 #+END_SRC
+
+#+RESULTS:
+
 The problem is that the proper name for the theorem is =foo.bar=
 rather than =bar=; if we replace =`bar= by =`foo.bar=, the example is
 accepted. The =mk_const= tactic takes an arbitrary name and attempts
@@ -346,6 +339,9 @@ example : true := by my_tac -- fails
 
 end foo
 #+END_SRC
+
+#+RESULTS:
+
 It also succeeds if we replace =``bar= by =``foo.bar=. The
 double-backtick asks the parser to resolve the expression with the
 name of an object in the environment /at parse time/, and insert the
@@ -372,6 +368,8 @@ by do n ← mk_fresh_name,
       exact hyp
 -- END
 #+END_SRC 
+
+#+RESULTS:
 
 The type =expr= reflects the internal representation of Lean
 expressions. It is defined inductively in the file =expr.lean=, but
@@ -403,6 +401,9 @@ by do split,
    mk_mapp ``and.left [none, none, some eH] >>= exact
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 In this example, the invocations of =mk_mapp= retrieve the definition
 of =and.right= and =and.left=, respectively. It makes no difference
 whether the arguments to those theorems have been marked implicit or
@@ -430,6 +431,9 @@ by do split,
       mk_app ``and.left [eA, eB, eH] >>= exact
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 You can send less than the full list of arguments to =mk_app=, but the
 arguments you send are assumed to be the /final/ arguments, with the
 earlier ones made implicit. Thus, in the example above, we could send
@@ -446,6 +450,9 @@ by do split,
       mk_app ``and.left [eH] >>= exact
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 Finally, as indicated in the last section, you can also use =mk_const=
 to construct a constant expression from the corresponding name:
 #+BEGIN_SRC lean
@@ -462,10 +469,12 @@ by do split,
 -- END
 #+END_SRC
 
+#+RESULTS:
+
 We have also seen above that it is possible to use =to_expr= to
 elaborate expressions at executation time, in the context of the
 current goal.
-#+BEGIN_SRC lean_text
+#+BEGIN_EXAMPLE
 open tactic
 
 -- BEGIN
@@ -474,7 +483,7 @@ by do split,
    to_expr `(and.right H) >>= exact,
    to_expr `(and.left H) >>= exact
 -- END
-#+END_SRC
+#+END_EXAMPLE
 Here, the expressions =`(and.right H)= and =`(and.left H)= are
 pre-expressions, that is, objects of type =pexpr=. The interface to
 =pexpr= can be found in the file =pexpr.lean=, but the type is largely
@@ -497,7 +506,7 @@ the example above, suppose we are in a situation where instead of the
 name =H=, we have the corresponding /expression/, =eH=, and want to
 use that to construct the term. We can insert it into the
 pre-expression by preceding it with a double-percent sign:
-#+BEGIN_SRC lean_text
+#+BEGIN_EXAMPLE
 open tactic
 
 -- BEGIN
@@ -507,7 +516,7 @@ by do split,
    to_expr `(and.right %%eH) >>= exact,
    to_expr `(and.left %%eH) >>= exact
 -- END
-#+END_SRC
+#+END_EXAMPLE
 When the tactic is executed, Lean elaborates the pre-expressions given
 by =`(...)=, with the expression =eH= inserted in the right place.
 
@@ -545,6 +554,9 @@ do ctx ← local_context,
 -- END
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 The expression =find_same_type t es= tries to find in es an expression
 with type definitionally equal to =t= in the list of expressions =es=,
 by a straightforward recursion on the list. The =infer_type= tactic
@@ -569,6 +581,9 @@ meta def first {A : Type} : list (tactic A) → tactic A
 | (t::ts) := t <|> first ts
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 It fails if none of the tactics on the list succeeds. Consider the
 example from Section [[file:01_Introduction.org::#Metaprogramming_in_Lean][Metaprogramming in Lean]] of the Introduction:
 #+BEGIN_SRC lean
@@ -608,6 +623,9 @@ repeat
            else failed))
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 The =repeat= tactic simply repeats the inner block until it fails. The
 inner block starts by getting the local context. The =forl= term is
 just the list =map= function with the order reversed: for each element
@@ -649,6 +667,9 @@ repeat_at_most 100000
 
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 But 100,000 iterations is still enough to get you into trouble if you
 are not careful.
 
@@ -706,6 +727,8 @@ section
         end
 end
 #+END_SRC
+
+#+RESULTS:
 
 
 ** Metavariables and Unification

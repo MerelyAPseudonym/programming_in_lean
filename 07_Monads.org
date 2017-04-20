@@ -58,16 +58,12 @@ thinking about what they all have in common.
 
 Lean implements the following common notation. First, we have the
 infix notation
-#+BEGIN_SRC lean_text
-ma >>= f
-#+END_SRC
+: ma >>= f
 for =bind ma f=. Think of this as saying
 "take an element =a= out of the box, and send it to =f=." Remember, we
 are allowed to do that as long as the return type of =f= is of the
 form =m β=. We also have the infix notation, 
-#+BEGIN_SRC lean_text
-ma >> mb
-#+END_SRC 
+: ma >> mb
 for =bind ma (λ a, mb)=. This takes an element =a= out of the box,
 ignores it entirely, and then returns =mb=. These two pieces of
 notation are most useful in situations where the act of taking an
@@ -82,9 +78,7 @@ more than that.
 Thinking of monads in terms of performing actions while computing
 results is quite powerful, and Lean provides notation to support that
 perspective. The expression
-#+BEGIN_SRC lean_text
-do a ← ma, t
-#+END_SRC
+: do a ← ma, t
 is syntactic sugar for ~ma >>= (λ a, t)~. Here =t= is typically an
 expression that depends on =a=, and it should have type =m β= for some
 =β=. So you can read =do a ← ma, t= as reaching into the box,
@@ -92,28 +86,20 @@ extracting an =a=, and then continuing the computation with
 =t=. Similarly, =do s, t= is syntactic sugar for =s >> t=, supporting
 the reading "do =s=, then do =t=." The notation supports iteration,
 so, for example, 
-#+BEGIN_SRC lean_text
-do a ← s, 
-   b ← t, 
-   f a b, 
-   return (g a b)
-#+END_SRC
+: do a ← s, 
+:    b ← t, 
+:    f a b, 
+:    return (g a b)
 is syntactic sugar for
-#+BEGIN_SRC lean_text
-bind s (λ a, bind t (λ b, bind (f a b) (λ c, return (g a b)))). 
-#+END_SRC
+: bind s (λ a, bind t (λ b, bind (f a b) (λ c, return (g a b)))). 
 It supports the reading "do =s= and extract =a=, do =t= and
 extract =b=, do =f a b=, then return the value =g a b=."
 
 Incidentally, as you may have guessed, a monad is implemented as a
 type class in Lean. In other words, =return= really has type 
-#+BEGIN_SRC lean_text
-Π {m : Type → Type} [monad m] {α : Type}, α → m α},
-#+END_SRC
+: Π {m : Type → Type} [monad m] {α : Type}, α → m α},
 and =bind= really has type 
-#+BEGIN_SRC lean_text
-Π {m : Type → Type} [monad m] {α β : Type}, m α → (α → m β) → m β.
-#+END_SRC
+: Π {m : Type → Type} [monad m] {α β : Type}, m α → (α → m β) → m β.
 In general, the relevant monad can be inferred from the expressions in
 which =bind= and =return= appear, and the monad structure is then
 inferred by type class inference.
@@ -155,6 +141,9 @@ end
 
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 If the element =oa= is =some a=, we can simply apply =f= to =a=, and
 otherwise we simply return =none=. Notice how the =do= notation allows
 us to chain these operations:
@@ -175,6 +164,9 @@ do a ← oa,
    c ← g a b,
    h a b c
 #+END_SRC
+
+#+RESULTS:
+
 Think of =f=, =g=, and =h= as being partial functions on their
 respective domains, where a return value of =none= indicates that the
 function is undefined for the given input. Intuitively, the second
@@ -216,6 +208,9 @@ join (map f la)
 
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 Since the example in the previous section used nothing more than
 generic monad operations, we can replay it in the =list= setting:
 #+BEGIN_SRC lean
@@ -230,6 +225,9 @@ do a ← la,
    c ← g a b,
    h a b c
 #+END_SRC
+
+#+RESULTS:
+
 Now think of the computation as representing the list of all possible
 values of the expression =h a (f a) (g a (f a))=, where the bind
 percolates all possible values of the subexpressions to the final
@@ -250,6 +248,9 @@ length
       c ← g a b,
       h a b c)
 #+END_SRC
+
+#+RESULTS:
+
 We can also move =length= inside the =do= expression, but then the
 output lives in =ℕ= instead of a =list=. As a result, we need to use
 =return= to put the result in a monad:
@@ -266,6 +267,8 @@ do a ← la,
    c ← g a b,
    return (length (h a b c))
 #+END_SRC
+
+#+RESULTS:
 
 ** The state monad
 
@@ -290,6 +293,9 @@ structure registers : Type := (x : ℕ) (y : ℕ) (z : ℕ)
 
 def init_reg : registers := registers.mk 0 0 0
 #+END_SRC
+
+#+RESULTS:
+
 Now, instead of defining =f : α → β= that operates on the state of the
 registers implicitly, we would define a function =f₀ : α × registers →
 β × registers= that operates on it explicitly. The function =f₀= would
@@ -353,9 +359,7 @@ encode a function which operates on any state to produce an element of
 state =s=, =sa s= consists of a pair =(a, s₀)=, and applying =f= to
 =a= and then =s₀= yields the required element of =β × S=. Thus the
 def of =bind sa f= is as follows:
-#+BEGIN_SRC lean_text
-λ s, match (sa s) with (a, s₀) := b a s₀
-#+END_SRC
+: λ s, match (sa s) with (a, s₀) := b a s₀
 
 The library also defines operations =read= and =write= as follows:
 #+BEGIN_SRC lean
@@ -365,6 +369,9 @@ def read {S : Type} : state S S :=
 def write {S : Type} : S → state S unit :=
 λ s₀ s, ((), s₀)
 #+END_SRC
+
+#+RESULTS:
+
 With the argument =S= implicit, =read= is simply the state computation
 that does not change the current state, but also returns it as a
 value.  The value =write s₀= is the state computation which replaces
@@ -407,6 +414,9 @@ do s ← read,
    write (registers.mk (registers.x s) (registers.y s) n)
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 We can then write a little register program as follows:
 #+BEGIN_SRC lean
 open state
@@ -454,6 +464,9 @@ do write_x 5,
    return (y + 2)
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 To see the results of this program, we have to "run" it on the initial
 state:
 #+BEGIN_SRC lean
@@ -504,6 +517,10 @@ do write_x 5,
 eval foo init_reg
 -- END
 #+END_SRC
+
+#+RESULTS:
+: (17, {x := 5, y := 15, z := 8})
+
 The result is the pair =(15, registers.mk 5 15 8)=, consisting of the
 return value, =y=, paired with the values of the three registers.
 
@@ -527,6 +544,9 @@ constant get_line : io string
 -- END
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 The expression =put_str s= changes the =io= state by writing =s= to
 output; the return type, =unit=, indicates that no meaningful value is
 returned. The expression =put_nat n= does the analogous thing for a
@@ -547,6 +567,9 @@ import system.io
 vm_eval put_str "hello " >> put_str "world!" >> put_nat (27 * 39)
 -- END
 #+END_SRC
+
+#+RESULTS:
+: hello world!1053
 
 # TODO: what will get_line do in the tutorial system?
 
@@ -601,6 +624,9 @@ if P then pure () else failure
 -- END
 end hide
 #+END_SRC
+
+#+RESULTS:
+
 The =monad= class extends both =functor= and =applicative=, so both of
 these can be seen as even more abstract versions of =monad=. On the
 other hand, not every =monad= is =alternative=, and in the next chapter

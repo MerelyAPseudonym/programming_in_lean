@@ -105,6 +105,11 @@ put_str "hello world\n"
 
 vm_eval hello_world
 #+END_SRC
+
+#+RESULTS:
+: hello world
+: 
+
 The next example prints the first 100 squares:
 #+BEGIN_SRC lean
 import system.io
@@ -118,6 +123,111 @@ def print_squares : ℕ → io unit
 
 vm_eval print_squares 100
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+4^2 = 16
+5^2 = 25
+6^2 = 36
+7^2 = 49
+8^2 = 64
+9^2 = 81
+10^2 = 100
+11^2 = 121
+12^2 = 144
+13^2 = 169
+14^2 = 196
+15^2 = 225
+16^2 = 256
+17^2 = 289
+18^2 = 324
+19^2 = 361
+20^2 = 400
+21^2 = 441
+22^2 = 484
+23^2 = 529
+24^2 = 576
+25^2 = 625
+26^2 = 676
+27^2 = 729
+28^2 = 784
+29^2 = 841
+30^2 = 900
+31^2 = 961
+32^2 = 1024
+33^2 = 1089
+34^2 = 1156
+35^2 = 1225
+36^2 = 1296
+37^2 = 1369
+38^2 = 1444
+39^2 = 1521
+40^2 = 1600
+41^2 = 1681
+42^2 = 1764
+43^2 = 1849
+44^2 = 1936
+45^2 = 2025
+46^2 = 2116
+47^2 = 2209
+48^2 = 2304
+49^2 = 2401
+50^2 = 2500
+51^2 = 2601
+52^2 = 2704
+53^2 = 2809
+54^2 = 2916
+55^2 = 3025
+56^2 = 3136
+57^2 = 3249
+58^2 = 3364
+59^2 = 3481
+60^2 = 3600
+61^2 = 3721
+62^2 = 3844
+63^2 = 3969
+64^2 = 4096
+65^2 = 4225
+66^2 = 4356
+67^2 = 4489
+68^2 = 4624
+69^2 = 4761
+70^2 = 4900
+71^2 = 5041
+72^2 = 5184
+73^2 = 5329
+74^2 = 5476
+75^2 = 5625
+76^2 = 5776
+77^2 = 5929
+78^2 = 6084
+79^2 = 6241
+80^2 = 6400
+81^2 = 6561
+82^2 = 6724
+83^2 = 6889
+84^2 = 7056
+85^2 = 7225
+86^2 = 7396
+87^2 = 7569
+88^2 = 7744
+89^2 = 7921
+90^2 = 8100
+91^2 = 8281
+92^2 = 8464
+93^2 = 8649
+94^2 = 8836
+95^2 = 9025
+96^2 = 9216
+97^2 = 9409
+98^2 = 9604
+99^2 = 9801
+
+#+end_example
 
 We will explain the data type =io unit= in Chapter [[file:07_Monads::#Monads][Monads]]. Although
 this program has a real world side effect of sending output to the
@@ -138,6 +248,11 @@ put_str "hello world\n"
 print axioms hello_world
 -- END
 #+END_SRC
+
+#+RESULTS:
+: io
+: put_str
+
 In this way, we can prove properties of programs involving =io= that
 do not depend in any way on the particular results of the input and
 output.
@@ -176,6 +291,12 @@ vm_eval m91 10
 vm_eval m91 100
 vm_eval m91 1000
 #+END_SRC
+
+#+RESULTS:
+: 91
+: 91
+: 990
+
 We can print out the first 120 values of =m91=:
 #+BEGIN_SRC lean
 import system.io
@@ -194,6 +315,132 @@ meta def print_m91 : ℕ → io unit
 vm_eval print_m91 120
 -- END
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+m91 0 = 91
+m91 1 = 91
+m91 2 = 91
+m91 3 = 91
+m91 4 = 91
+m91 5 = 91
+m91 6 = 91
+m91 7 = 91
+m91 8 = 91
+m91 9 = 91
+m91 10 = 91
+m91 11 = 91
+m91 12 = 91
+m91 13 = 91
+m91 14 = 91
+m91 15 = 91
+m91 16 = 91
+m91 17 = 91
+m91 18 = 91
+m91 19 = 91
+m91 20 = 91
+m91 21 = 91
+m91 22 = 91
+m91 23 = 91
+m91 24 = 91
+m91 25 = 91
+m91 26 = 91
+m91 27 = 91
+m91 28 = 91
+m91 29 = 91
+m91 30 = 91
+m91 31 = 91
+m91 32 = 91
+m91 33 = 91
+m91 34 = 91
+m91 35 = 91
+m91 36 = 91
+m91 37 = 91
+m91 38 = 91
+m91 39 = 91
+m91 40 = 91
+m91 41 = 91
+m91 42 = 91
+m91 43 = 91
+m91 44 = 91
+m91 45 = 91
+m91 46 = 91
+m91 47 = 91
+m91 48 = 91
+m91 49 = 91
+m91 50 = 91
+m91 51 = 91
+m91 52 = 91
+m91 53 = 91
+m91 54 = 91
+m91 55 = 91
+m91 56 = 91
+m91 57 = 91
+m91 58 = 91
+m91 59 = 91
+m91 60 = 91
+m91 61 = 91
+m91 62 = 91
+m91 63 = 91
+m91 64 = 91
+m91 65 = 91
+m91 66 = 91
+m91 67 = 91
+m91 68 = 91
+m91 69 = 91
+m91 70 = 91
+m91 71 = 91
+m91 72 = 91
+m91 73 = 91
+m91 74 = 91
+m91 75 = 91
+m91 76 = 91
+m91 77 = 91
+m91 78 = 91
+m91 79 = 91
+m91 80 = 91
+m91 81 = 91
+m91 82 = 91
+m91 83 = 91
+m91 84 = 91
+m91 85 = 91
+m91 86 = 91
+m91 87 = 91
+m91 88 = 91
+m91 89 = 91
+m91 90 = 91
+m91 91 = 91
+m91 92 = 91
+m91 93 = 91
+m91 94 = 91
+m91 95 = 91
+m91 96 = 91
+m91 97 = 91
+m91 98 = 91
+m91 99 = 91
+m91 100 = 91
+m91 101 = 91
+m91 102 = 92
+m91 103 = 93
+m91 104 = 94
+m91 105 = 95
+m91 106 = 96
+m91 107 = 97
+m91 108 = 98
+m91 109 = 99
+m91 110 = 100
+m91 111 = 101
+m91 112 = 102
+m91 113 = 103
+m91 114 = 104
+m91 115 = 105
+m91 116 = 106
+m91 117 = 107
+m91 118 = 108
+m91 119 = 109
+
+#+end_example
+
 Of course, such uses of recursion are dangerous.
 # TODO: replace with meta def foo : nat := foo + 1
 #+BEGIN_SRC lean
@@ -203,6 +450,10 @@ meta def foo : ℕ → ℕ
 eval foo
 -- vm_eval foo 0
 #+END_SRC
+
+#+RESULTS:
+: λ (a : ℕ), nat.succ ([foo] a)
+
 Evaluating =foo= using the kernel evaluator shows that the
 implementation is a bit of a hack; the term in the definition includes
 a macro which names =foo= itself. The virtual machine that evaluates
@@ -256,6 +507,9 @@ repeat
            else failed))
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 We will explain the details in Chapter [[file:08_Writing_Tactics.org::#Writing_Tactics][Writing Tactics]], but, roughly
 speaking, the code repeats the following action until there is nothing
 left to do: get the list of hypotheses in the local context, find a
@@ -299,6 +553,9 @@ example (a b c : Prop) (H : (a ∧ b) ∧ (c ∧ a)) : c :=
 begin destruct_conjunctions >> assumption end
 -- END
 #+END_SRC
+
+#+RESULTS:
+
 Note that the reason we can use such code to prove theorems without
 compromising the integrity of the formal system is that Lean's kernel
 always certifies the result. From a foundational point of view, we
